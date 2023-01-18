@@ -21,13 +21,7 @@ public class ROM {
 
     private byte[] chrROM;
 
-    private byte[] sram;
-
     public ROM(byte[] romData) {
-        this(romData, null);
-    }
-
-    public ROM(byte[] romData, byte[] sram) {
 
         byte[] headData = new byte[HEAD_SIZE];
         System.arraycopy(romData, 0, headData, 0, headData.length);
@@ -45,7 +39,6 @@ public class ROM {
         int chrROMOffset = headData.length + trainerLength + prgROM.length;
         System.arraycopy(romData, chrROMOffset, chrROM, 0, chrROM.length);
 
-        this.sram = sram;
     }
 
     public static ROM loadFromFile(String filePath) throws Exception {
@@ -90,9 +83,6 @@ public class ROM {
         return chrROM;
     }
 
-    public byte[] getSRAM() {
-        return sram;
-    }
 
     /**
      * Offset Meaning

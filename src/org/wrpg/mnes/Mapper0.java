@@ -3,10 +3,14 @@ package org.wrpg.mnes;
 public class Mapper0 implements IMapper {
 
     ROM rom;
+
+    byte[] sram;
+
     private boolean isMirrored;
 
-    public Mapper0(ROM rom) {
+    public Mapper0(ROM rom, byte[] sram) {
         this.rom = rom;
+        this.sram = sram;
         this.isMirrored = rom.getPrgROMSize() == 16 * 1024; // 程序大小只有 16K 则需要镜像
     }
 
@@ -22,7 +26,7 @@ public class Mapper0 implements IMapper {
             return this.rom.getPrgROM()[(this.isMirrored ? address & 0xBFFF : address) - 0x8000];
         } else if (address >= 0x6000) {
             // SRAM
-            return this.rom.getSRAM()[address - 0x6000];
+            return this.sram[address - 0x6000];
         }
 
         return 0;
@@ -40,7 +44,7 @@ public class Mapper0 implements IMapper {
             this.rom.getPrgROM()[(this.isMirrored ? address & 0xBFFF : address) - 0x8000] = data;
         } else if (address >= 0x6000) {
             // RAM
-            this.rom.getSRAM()[address - 0x6000] = data;
+            this.sram[address - 0x6000] = data;
         }
     }
 }
