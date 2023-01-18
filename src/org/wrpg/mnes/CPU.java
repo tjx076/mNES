@@ -48,9 +48,9 @@ public class CPU {
     private byte[] ioRegisters1 = new byte[IO_REGISTERS_1_SIZE];//$2000-2008
     private byte[] ioRegisters2 = new byte[IO_REGISTERS_2_SIZE];//$4000-$4020
 
-    Cartridge cartridge;
+    IMapper mapper;
 
-    public CPU(Cartridge cartridge) {
-        this.cartridge = cartridge;
+    public CPU(IMapper mapper) {
+        this.mapper = mapper;
     }
 }

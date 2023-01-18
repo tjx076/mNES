@@ -23,8 +23,6 @@ public class PPU {
     private static final int  SPRITE_PALETTE_SIZE = 16;//byte
 
 
-    Cartridge cartridge;
-
     private byte[] nameTable0 = new byte[NAME_TABLE_0_SIZE];//$2000-$23C0
     private byte[] attributeTable0 = new byte[ATTRIBUTE_TABLE_0_SIZE];//$23C0-$2400
     private byte[] nameTable1 = new byte[NAME_TABLE_1_SIZE];//$2400-$27C0
@@ -37,8 +35,10 @@ public class PPU {
     private byte[] imagePalette = new byte[IMAGE_PALETTE_SIZE];//$3F00-$3F10
     private byte[] spritePalette = new byte[SPRITE_PALETTE_SIZE];//$3F10-$3F20
 
-    public PPU(Cartridge cartridge) {
-        this.cartridge = cartridge;
+    IMapper mapper;
+
+    public PPU(IMapper mapper) {
+        this.mapper = mapper;
     }
 
 }

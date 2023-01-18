@@ -19,10 +19,7 @@ public class Cartridge {
         }
     }
 
-    public byte read(short address) {
-        return mapper.read(address);
-    }
-    public void write(short address, byte data) {
-        mapper.write(address, data);
+    public IMapper getMapper() {
+        return mapper;
     }
 }
