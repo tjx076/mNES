@@ -50,7 +50,52 @@ public class CPU {
 
     IMapper mapper;
 
+    IBus cpuBus;
+
     public CPU(IMapper mapper) {
         this.mapper = mapper;
+        this.cpuBus = new CPUBus(mapper);
+    }
+
+    private class CPUBus implements IBus {
+
+        IMapper mapper;
+
+        public CPUBus(IMapper mapper) {
+            this.mapper = mapper;
+        }
+
+
+        @Override
+        public void writeByte(short address, byte data) {
+            if (address < 0x2000) {
+                // RAM
+                ram[address & 0x07FF] = data;
+            } else if (address < 0x6000) {
+                // IO Registers, 暂时不实现
+            } else {
+                // Cartridge
+                this.mapper.write(address, data);
+            }
+        }
+
+        @Override
+        public void writeWord(short address, byte[] data) {
+            this.writeByte(address, data[0]);
+            this.writeByte((short) (address + 1), data[1]);
+        }
+
+        @Override
+        public byte readByte(short address) {
+            return 0;
+        }
+
+        @Override
+        public byte[] readWord(short address) {
+            byte[] data = new byte[2];
+            data[0] = this.readByte(address);
+            data[1] = this.readByte((short) (address + 1));
+            return data;
+        }
     }
 }
