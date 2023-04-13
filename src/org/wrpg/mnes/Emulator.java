@@ -20,10 +20,10 @@ public class Emulator implements IEmulator{
 
         this.cartridge = new Cartridge(nesData, null);
 
-        this.cpuBus = new CPUBus(cartridge.getMapper());
+        this.cpuBus = new CPUBus(cartridge);
         this.cpu = new CPU(cpuBus);
 
-        this.ppuBus = new PPUBus(cartridge.getMapper());
+        this.ppuBus = new PPUBus(cartridge);
         this.ppu = new PPU(ppuBus);
 
 

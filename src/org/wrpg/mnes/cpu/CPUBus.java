@@ -1,5 +1,6 @@
 package org.wrpg.mnes.cpu;
 
+import org.wrpg.mnes.Cartridge;
 import org.wrpg.mnes.IBus;
 import org.wrpg.mnes.IMapper;
 
@@ -82,10 +83,10 @@ public class CPUBus implements IBus {
     private byte[] ioRegisters1 = new byte[IO_REGISTERS_1_SIZE];//$2000-2008
     private byte[] ioRegisters2 = new byte[IO_REGISTERS_2_SIZE];//$4000-$4020
 
-    IMapper mapper;
+    private Cartridge cartridge;
 
-    public CPUBus(IMapper mapper) {
-        this.mapper = mapper;
+    public CPUBus(Cartridge cartridge) {
+        this.cartridge = cartridge;
     }
 
 
@@ -98,19 +99,28 @@ public class CPUBus implements IBus {
             // IO Registers, 暂时不实现
         } else {
             // Cartridge
-            this.mapper.write(address, data);
+            cartridge.getMapper().write(address, data);
         }
     }
 
     @Override
     public void writeWord(short address, short data) {
         this.writeByte(address, (byte) (data & 0xFF));
-        this.writeByte(address, (byte) ((data >> 8) & 0xFF));
+        this.writeByte((short) (address + 1), (byte) ((data >> 8) & 0xFF));
     }
 
     @Override
     public byte readByte(short address) {
-        return 0;
+        if (address < 0x2000) {
+            // RAM
+            return this.ram[address & 0x07FF];
+        } else if (address < 0x6000) {
+            // IO Registers, 暂时不实现
+            return 0;
+        } else {
+            // ROM
+            return this.cartridge.getMapper().read(address);
+        }
     }
 
     @Override

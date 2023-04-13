@@ -1,5 +1,6 @@
 package org.wrpg.mnes.ppu;
 
+import org.wrpg.mnes.Cartridge;
 import org.wrpg.mnes.IBus;
 import org.wrpg.mnes.IMapper;
 
@@ -38,10 +39,10 @@ public class PPUBus  implements IBus {
     private byte[] imagePalette = new byte[IMAGE_PALETTE_SIZE];//$3F00-$3F10
     private byte[] spritePalette = new byte[SPRITE_PALETTE_SIZE];//$3F10-$3F20
 
-    IMapper mapper;
+    private Cartridge cartridge;
 
-    public PPUBus(IMapper mapper) {
-        this.mapper = mapper;
+    public PPUBus(Cartridge cartridge) {
+        this.cartridge = cartridge;
     }
 
     @Override
