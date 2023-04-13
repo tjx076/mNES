@@ -1,4 +1,7 @@
-package org.wrpg.mnes;
+package org.wrpg.mnes.rom;
+
+import org.wrpg.mnes.IMapper;
+import org.wrpg.mnes.rom.ROM;
 
 public class Mapper0 implements IMapper {
 

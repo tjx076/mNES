@@ -1,6 +1,6 @@
 package org.wrpg.mnes.tests;
 
-import org.wrpg.mnes.ROM;
+import org.wrpg.mnes.rom.ROM;
 
 public class ROMTests {
 

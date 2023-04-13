@@ -1,16 +1,31 @@
 package org.wrpg.mnes;
 
+import org.wrpg.mnes.cpu.CPU;
+import org.wrpg.mnes.cpu.CPUBus;
+import org.wrpg.mnes.ppu.PPU;
+import org.wrpg.mnes.ppu.PPUBus;
+
 public class Emulator implements IEmulator{
 
     private Cartridge cartridge;
     private CPU cpu;
+
+    private IBus cpuBus;
+
     private PPU ppu;
 
+    private IBus ppuBus;
 
     public Emulator(byte[] nesData) {
+
         this.cartridge = new Cartridge(nesData, null);
-        this.cpu = new CPU(cartridge.getMapper());
-        this.ppu = new PPU(cartridge.getMapper());
+
+        this.cpuBus = new CPUBus(cartridge.getMapper());
+        this.cpu = new CPU(cpuBus);
+
+        this.ppuBus = new PPUBus(cartridge.getMapper());
+        this.ppu = new PPU(ppuBus);
+
 
     }
 

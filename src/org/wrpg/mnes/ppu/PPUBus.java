@@ -1,6 +1,9 @@
-package org.wrpg.mnes;
+package org.wrpg.mnes.ppu;
 
-public class PPU {
+import org.wrpg.mnes.IBus;
+import org.wrpg.mnes.IMapper;
+
+public class PPUBus  implements IBus {
 
     private static final int  PATTERN_TABLE_1_SIZE = 4*1024;//byte
     private static final int  PATTERN_TABLE_2_SIZE = 4*1024;//byte
@@ -14,10 +17,10 @@ public class PPU {
     private static final int  ATTRIBUTE_TABLE_3_SIZE = 64;//byte
 
     private static final int NAME_TABLES_MIRRORS = NAME_TABLE_0_SIZE+ATTRIBUTE_TABLE_0_SIZE
-                                                +NAME_TABLE_1_SIZE+ATTRIBUTE_TABLE_1_SIZE
-                                                +NAME_TABLE_2_SIZE+ATTRIBUTE_TABLE_2_SIZE
-                                                +NAME_TABLE_3_SIZE+ATTRIBUTE_TABLE_3_SIZE
-                                                                    ;//0x3000 - 0x3EFF
+            +NAME_TABLE_1_SIZE+ATTRIBUTE_TABLE_1_SIZE
+            +NAME_TABLE_2_SIZE+ATTRIBUTE_TABLE_2_SIZE
+            +NAME_TABLE_3_SIZE+ATTRIBUTE_TABLE_3_SIZE
+            ;//0x3000 - 0x3EFF
 
     private static final int  IMAGE_PALETTE_SIZE = 16;//byte
     private static final int  SPRITE_PALETTE_SIZE = 16;//byte
@@ -37,8 +40,27 @@ public class PPU {
 
     IMapper mapper;
 
-    public PPU(IMapper mapper) {
+    public PPUBus(IMapper mapper) {
         this.mapper = mapper;
     }
 
+    @Override
+    public void writeByte(short address, byte data) {
+
+    }
+
+    @Override
+    public void writeWord(short address, short data) {
+
+    }
+
+    @Override
+    public byte readByte(short address) {
+        return 0;
+    }
+
+    @Override
+    public short readWord(short address) {
+        return 0;
+    }
 }

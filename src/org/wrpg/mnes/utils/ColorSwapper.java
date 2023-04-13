@@ -1,4 +1,4 @@
-package org.wrpg.mnes;
+package org.wrpg.mnes.utils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
