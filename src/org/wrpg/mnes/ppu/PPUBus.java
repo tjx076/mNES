@@ -6,8 +6,13 @@ import org.wrpg.mnes.IMapper;
 
 public class PPUBus  implements IBus {
 
-    private static final int  PATTERN_TABLE_1_SIZE = 4*1024;//byte
-    private static final int  PATTERN_TABLE_2_SIZE = 4*1024;//byte
+    /**
+     * 0x2000 - 0x2FFF ( Name Tables )
+     * 这里一共 4KB 数据，其中 2KB 为主机 VRAM，
+     * 另外 2KB 根据游戏配置为前 2KB 的 Mirror 或者卡带上的 VRAM。
+     * 这里面存放着 Pattern Table 的偏移量，以此控制屏幕显示的内容
+     *
+     */
     private static final int  NAME_TABLE_0_SIZE = 960;//byte
     private static final int  ATTRIBUTE_TABLE_0_SIZE = 64;//byte
     private static final int  NAME_TABLE_1_SIZE = 960;//byte
@@ -17,14 +22,14 @@ public class PPUBus  implements IBus {
     private static final int  NAME_TABLE_3_SIZE = 960;//byte
     private static final int  ATTRIBUTE_TABLE_3_SIZE = 64;//byte
 
+    /**
+     * 0x3000 - 0x3EFF ( Mirrors )
+     */
     private static final int NAME_TABLES_MIRRORS = NAME_TABLE_0_SIZE+ATTRIBUTE_TABLE_0_SIZE
             +NAME_TABLE_1_SIZE+ATTRIBUTE_TABLE_1_SIZE
             +NAME_TABLE_2_SIZE+ATTRIBUTE_TABLE_2_SIZE
             +NAME_TABLE_3_SIZE+ATTRIBUTE_TABLE_3_SIZE
             ;//0x3000 - 0x3EFF
-
-    private static final int  IMAGE_PALETTE_SIZE = 16;//byte
-    private static final int  SPRITE_PALETTE_SIZE = 16;//byte
 
 
     private byte[] nameTable0 = new byte[NAME_TABLE_0_SIZE];//$2000-$23C0

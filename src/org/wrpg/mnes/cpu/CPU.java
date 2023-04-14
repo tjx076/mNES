@@ -13,10 +13,18 @@ import org.wrpg.mnes.IBus;
  * 然后通过 PPU 寄存器往 PPU 总线上的 VRAM 写数据，
  * 同时往 APU 写数据，最终反馈到了屏幕和声音上
  *
+ *
+ * CPU 有一个时钟作为输入源，
+ * 该时钟实际上只是一个频率很高的脉冲波，一般几 M 到 几 GHZ。
+ * 传统的 CPU 会在一个到多个时钟期间执行完一条指令，然后再执行下一条指令。
+ * 如果某一时刻产生了中断，CPU 会读取中断向量表对应中断地址，执行中断向量程序
+ * 等到中断执行完后切换回中断前地址处继续执行
+ *
+ *
  */
 public class CPU {
 
-    long suspendCycles;
+    long suspendCycles;//暂停的指令周期
 
     IBus cpuBus;
 
@@ -25,18 +33,6 @@ public class CPU {
     byte instructionCycles = 0;
     long clocks = 0;
 
-    //http://www.oxyron.de/html/opcodes02.html
-    Instruction[] instructions = new Instruction[]{
-            // http://nesdev.com/the%20%27B%27%20flag%20&%20BRK%20instruction.txt Says:
-            //   Regardless of what ANY 6502 documentation says, BRK is a 2 byte opcode. The
-            //   first is #$00, and the second is a padding byte. This explains why interrupt
-            //   routines called by BRK always return 2 bytes after the actual BRK opcode,
-            //   and not just 1.
-            // So we use ZERO_PAGE instead of IMPLICIT addressing mode
-            new Instruction(Opcode.BRK, AddressingMode.ZERO_PAGE, (byte) 2, (byte)7, (byte)0),//0
-            new Instruction(Opcode.ORA, AddressingMode.X_INDEXED_INDIRECT, (byte) 2, (byte)6, (byte)0),// 1, 1h
-
-    };
 
 
     public CPU(IBus cpuBus) {
@@ -44,6 +40,9 @@ public class CPU {
         this.registers = new Registers();
     }
 
+    /**
+     * CPU 时钟 1.79 MHz
+     */
     public void clock() {
         if (this.suspendCycles > 0) {
             this.suspendCycles--;
@@ -51,6 +50,9 @@ public class CPU {
         }
 
         if (this.instructionCycles == 0) {
+            //正常物理CPU，一个指令会分成多个阶段来执行，比如：取指令、解析、存取数等
+            //所以一个指令是分成多个时钟周期，分步执行完的
+            //但对于模拟器，cpu指令的执行，我们就只在cpu指令周期为0的时候，执行它
             this.step();
         }
 
@@ -58,10 +60,17 @@ public class CPU {
         this.clocks++;
     }
 
+    /**
+     * 执行指令
+     *
+     */
     private void step() {
 
     }
 
+    /**
+     * reset中断
+     */
     public void reset() {
         this.registers.A = 0;
         this.registers.X = 0;
@@ -74,6 +83,9 @@ public class CPU {
         this.clocks = 0;
     }
 
+    /**
+     * 可屏蔽中断
+     */
     public void irq() {
         if (this.isFlagSet(Flags.I)) {//屏蔽掉中断
             return;
@@ -89,6 +101,9 @@ public class CPU {
         this.instructionCycles += 7;
     }
 
+    /**
+     * 不可屏蔽中断
+     */
     public void nmi() {
 
     }

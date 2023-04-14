@@ -15,20 +15,89 @@ package org.wrpg.mnes.cpu;
 //    Indirect	间接寻址（只有 JMP 使用）	2	JMP ($FFFC)	跳转到 0xFFFC 地址上的值表示的地址处
 //    Indexed Indirect	变址间接寻址	1	LDA ($40,X)	首先 X 的值加上 0x40，得到一个地址，再以此地址上的值作为一个新地址，将新地址上的值写入 A
 //    Indirect Indexed	间接变址寻址	1	LDA ($40),Y	首先获取 0x40 处存储的值，将该值与 Y 相加，得到一个新地址，然后将该地址上的值写入 A
+
+
+/**
+ * imm = #$00
+ * zp = $00
+ * zpx = $00,X
+ * zpy = $00,Y
+ * izx = ($00,X)
+ * izy = ($00),Y
+ * abs = $0000
+ * abx = $0000,X
+ * aby = $0000,Y
+ * ind = ($0000)
+ * rel = $0000 (PC-relative)
+ */
 enum AddressingMode {
 
-    IMPLICIT, // CLC | RTS
-    ACCUMULATOR, // LSR A
-    IMMEDIATE, // LDA #10
-    ZERO_PAGE, // LDA $00
-    ZERO_PAGE_X, // STY $10, X
-    ZERO_PAGE_Y, // LDX $10, Y
-    RELATIVE, // BEQ label | BNE *+4
-    ABSOLUTE, // JMP $1234
-    ABSOLUTE_X, // STA $3000, X
-    ABSOLUTE_Y, // AND $4000, Y
-    INDIRECT, // JMP ($FFFC)
-    X_INDEXED_INDIRECT, // LDA ($40, X)
-    INDIRECT_Y_INDEXED, // LDA ($40), Y
+    IMPLICIT((CPU cpu)-> new AddressData(null, null, false)), //
 
+    ACCUMULATOR((CPU cpu)-> new AddressData(null, cpu.registers.A, false)), //
+
+    // imm
+    IMMEDIATE((CPU cpu)->{
+        byte data = cpu.cpuBus.readByte(cpu.registers.PC);
+        cpu.registers.PC++;
+
+        return new AddressData(null, data, false);
+    }),
+
+    // zp
+    ZERO_PAGE((CPU cpu)->{
+        byte address = cpu.cpuBus.readByte(cpu.registers.PC);
+        cpu.registers.PC++;
+
+        return new AddressData((short)(address & 0xFFFF), null, false);
+    }),
+
+    ZERO_PAGE_X, // zpx
+
+    ZERO_PAGE_Y, // zpy
+
+    RELATIVE, // rel
+
+    ABSOLUTE, // abs
+
+    ABSOLUTE_X, // abx
+
+    ABSOLUTE_Y, // aby
+
+    INDIRECT, // ind
+
+    X_INDEXED_INDIRECT, // izx
+
+    INDIRECT_Y_INDEXED, // izy
+
+    ;
+
+
+    AddrModeFunc func;
+
+    AddressingMode(AddrModeFunc func) {
+        this.func = func;
+    }
+
+    public AddressData call(CPU cpu) {
+        return this.func.call(cpu);
+    }
+
+    interface AddrModeFunc {
+
+        public AddressData call(CPU cpu);
+
+    }
+
+    static class AddressData {
+        public Short address; // Set value to NaN if immediate mode
+        public Byte data; // Set value to NaN if not immediate mode
+        public Boolean isCrossPage;
+
+        public AddressData(Short address, Byte data, Boolean isCrossPage ) {
+            this.address = address;
+            this.data = data;
+            this.isCrossPage = isCrossPage;
+        }
+    }
 }
