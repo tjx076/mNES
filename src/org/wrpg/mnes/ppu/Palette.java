@@ -16,8 +16,6 @@ import java.awt.*;
  */
 public class Palette {
 
-    public static Color all_colors[] = new Color[64];
-
     private static final int  PALETTE_SIZE = 16;//byte
 
 
