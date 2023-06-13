@@ -1,5 +1,5 @@
 # mNES
-NES模拟器 written in C
+NES模拟器 written in pure C
 
 工作中...
 
