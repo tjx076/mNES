@@ -1,7 +1,9 @@
 # mNES
-NES模拟器 written in JAVA
+NES模拟器 written in C
 
-已暂停，改用Rust实现https://github.com/shupiankuaile/ruNES
+工作中...
+
+欢迎参与。
 
 ## 参考
 https://www.nesdev.org
