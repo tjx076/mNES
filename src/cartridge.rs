@@ -1,6 +1,7 @@
 
 //https://www.nesdev.org/wiki/NES_2.0
 
+use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
 
@@ -13,21 +14,15 @@ const PRG_ROM_UNITS: usize = 16*1024;//byte
 const CHR_ROM_UNITS: usize = 8*1024;//byte
 
 pub struct Cartridge {
-
-    pub rom: Rom,
-
+    pub rom: RefCell<Rom>,
     //卡带上 8KB RAM，用于游戏额外的数据存储，比如：游戏存档
-    pub sram: Vec<u8>,
-
+    pub sram: RefCell<Vec<u8>>,
     //2KB 的额外用于 PPU 用的 VRAM，PPU 工作在 4-Screen 的时候才会用到
-    pub vram: Vec<u8>,
-    
+    pub vram: RefCell<Vec<u8>>,
 }
 
 impl Cartridge {
-
     pub fn from(path: &str) -> Self {
-        
         let mut file = File::open(path).unwrap();
         let mut data = vec![];
         file.read_to_end(&mut data).unwrap();
@@ -39,28 +34,21 @@ impl Cartridge {
         let vram = vec![];//TODO 
 
         Cartridge {
-            rom: rom,
-            sram: sram,
-            vram: vram,
+            rom: RefCell::new(rom),
+            sram: RefCell::new(sram),
+            vram: RefCell::new(vram),
         }
     }
-
 }
 
 pub struct Rom {
-
     header: Header,
-
     prg: Vec<u8>,
-
     chr: Vec<u8>,
-
 }
 
 impl Rom {
-
     fn from(rom_data: &[u8]) -> Self {
-
         let header = Header::from(&rom_data[..HEAD_SIZE]);
         
         //Trainer Area
@@ -82,7 +70,6 @@ impl Rom {
             chr: chr,
         }
     }
-
 
     pub fn get_mapperno(&self) -> u8 {
         self.header.mapper_no
@@ -218,7 +205,6 @@ impl Rom {
 //            ++-++++- Default Expansion Device
 #[derive(Default)]
 struct Header {
-
     ines: bool,
     nes20: bool,
 
@@ -227,13 +213,11 @@ struct Header {
 
     trainer: bool,
     mapper_no: u8,
-
 }
 
 impl Header {
 
     fn from(head_data: &[u8]) -> Self {
-        
         let mut header = Header::default();
 
         if head_data[0]==b'N' && head_data[1]==b'E' && head_data[2]==b'S' && head_data[3]==0x1A {
@@ -251,10 +235,6 @@ impl Header {
         header.mapper_no = (head_data[7]&0xF0) | ((head_data[6]>>4)&0x0F);
 
         header
-
     }
-
-
-
 
 }

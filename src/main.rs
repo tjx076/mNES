@@ -7,12 +7,9 @@ use crate::mapper::mapper0::Mapper0;
 
 
 fn main() {
+    let cartridge = Cartridge::from("/home/tjx/workspace/github_workspace/mNES/res/nestest.nes");
 
-    let mut cartridge = Cartridge::from("/home/tjx/workspace/github_workspace/ruNES/res/nestest.nes");
-
-    let mapper = Mapper0::from(&mut cartridge);
-
-    
+    let mapper = Mapper0::from(&cartridge);
 
     println!("Hello, world!");
 }
