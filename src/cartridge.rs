@@ -39,6 +39,14 @@ impl Cartridge {
             vram: RefCell::new(vram),
         }
     }
+
+    pub fn get_mapperno(&self) -> u8 {
+        self.rom.borrow().get_mapperno()
+    }
+
+    pub fn is_mirrored(&self) -> bool {
+        self.rom.borrow().is_mirrored()
+    }
 }
 
 pub struct Rom {

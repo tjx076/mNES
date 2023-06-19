@@ -1,6 +1,4 @@
 
-use std::borrow::BorrowMut;
-
 use crate::cartridge::Cartridge;
 use super::IMapper;
 
@@ -11,7 +9,7 @@ pub struct Mapper0<'a> {
 
 impl<'a> Mapper0<'a> {
     pub fn from(cart: &'a Cartridge) -> Self {
-        let mirrored = cart.rom.borrow().is_mirrored();
+        let mirrored = cart.is_mirrored();
 
         Mapper0 {
             cart,
@@ -22,7 +20,7 @@ impl<'a> Mapper0<'a> {
 
 impl<'a> IMapper for Mapper0<'a> {
     fn read(&self, address: u16) -> u8 {
-        let address = address & 0xFFFF;
+        let address: u16 = address & 0xFFFF;
 
         if address < 0x2000 {
             // CHR

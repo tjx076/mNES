@@ -1,4 +1,6 @@
 
+pub mod cpu_bus;
+
 pub trait IBus {
     fn writeb(&mut self, address: u16, data: u8);
 
