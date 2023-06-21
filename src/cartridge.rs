@@ -17,7 +17,7 @@ pub struct Cartridge {
     pub rom: RefCell<Rom>,
     //卡带上 8KB RAM，用于游戏额外的数据存储，比如：游戏存档
     pub sram: RefCell<Vec<u8>>,
-    //2KB 的额外用于 PPU 用的 VRAM，PPU 工作在 4-Screen 的时候才会用到
+    //2KB 的额外用于 PPU 用的 VRAM，PPU 工作在 4-Screen 的时候会用到
     pub vram: RefCell<Vec<u8>>,
 }
 
