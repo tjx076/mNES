@@ -52,13 +52,13 @@ lazy_static! {
         v.push(AddressingMode::ZERO_PAGE(Box::new(zero_page)));
         v.push(AddressingMode::ZERO_PAGE_X(Box::new(zero_page_x)));
         v.push(AddressingMode::ZERO_PAGE_Y(Box::new(zero_page_y)));
-        // v.push(AddressingMode::RELATIVE(Box::new(implicit)));
-        // v.push(AddressingMode::ABSOLUTE(Box::new(implicit)));
-        // v.push(AddressingMode::ABSOLUTE_X(Box::new(implicit)));
-        // v.push(AddressingMode::ABSOLUTE_Y(Box::new(implicit)));
-        // v.push(AddressingMode::INDIRECT(Box::new(implicit)));
-        // v.push(AddressingMode::X_INDEXED_INDIRECT(Box::new(implicit)));
-        // v.push(AddressingMode::INDIRECT_Y_INDEXED(Box::new(implicit)));
+        v.push(AddressingMode::RELATIVE(Box::new(relative)));
+        v.push(AddressingMode::ABSOLUTE(Box::new(absolute)));
+        v.push(AddressingMode::ABSOLUTE_X(Box::new(absolute_x)));
+        v.push(AddressingMode::ABSOLUTE_Y(Box::new(absolute_y)));
+        v.push(AddressingMode::INDIRECT(Box::new(indirect)));
+        v.push(AddressingMode::X_INDEXED_INDIRECT(Box::new(x_indexed_indirect)));
+        v.push(AddressingMode::INDIRECT_Y_INDEXED(Box::new(indirect_y_indexed)));
         v
     };
 }
@@ -80,20 +80,20 @@ fn accumulator(cpu: &mut CPU) -> AddressData {
 }
 
 fn immediate(cpu: &mut CPU) -> AddressData {
+    let data = cpu.bus.readb(cpu.regs.PC);
     cpu.regs.PC += 1;
 
     AddressData {
       address: None,
-      data: Some(cpu.bus.readb(cpu.regs.PC)),
+      data: Some(data),
       cross_page: false,
     }
 }
 
 
 fn zero_page(cpu: &mut CPU) -> AddressData {
-    cpu.regs.PC += 1;
-
     let address = cpu.bus.readb(cpu.regs.PC);
+    cpu.regs.PC += 1;
 
     AddressData {
       address: Some(address as u16 & 0xFFFF),
@@ -103,9 +103,8 @@ fn zero_page(cpu: &mut CPU) -> AddressData {
 }
 
 fn zero_page_x(cpu: &mut CPU) -> AddressData {
-    cpu.regs.PC += 1;
-
     let address = (cpu.bus.readb(cpu.regs.PC) + cpu.regs.X) & 0xFF;
+    cpu.regs.PC += 1;
 
     AddressData {
       address: Some(address as u16 & 0xFFFF),
@@ -115,13 +114,122 @@ fn zero_page_x(cpu: &mut CPU) -> AddressData {
 }
 
 fn zero_page_y(cpu: &mut CPU) -> AddressData {
-    cpu.regs.PC += 1;
-
     let address = (cpu.bus.readb(cpu.regs.PC) + cpu.regs.Y) & 0xFF;
+    cpu.regs.PC += 1;
 
     AddressData {
       address: Some(address as u16 & 0xFFFF),
       data: None,
       cross_page: false,
     }
+}
+
+fn relative(cpu: &mut CPU) -> AddressData {
+    // Range is -128 ~ 127
+    let offset = cpu.bus.readb(cpu.regs.PC);
+    cpu.regs.PC += 1;
+
+    let mut address : u16 = 0;
+    if (offset & 0x80) != 0 {
+        address = cpu.regs.PC + (offset as u16 - 0x100);
+    } else {
+        address = cpu.regs.PC + offset as u16;
+    }
+
+    AddressData {
+      address: Some(address & 0xFFFF),
+      data: None,
+      cross_page: false,
+    }
+}
+
+
+fn absolute(cpu: &mut CPU) -> AddressData {
+    let address = cpu.bus.readw(cpu.regs.PC);
+    cpu.regs.PC += 2;
+
+    AddressData {
+      address: Some(address & 0xFFFF),
+      data: None,
+      cross_page: false,
+    }
+}
+
+fn absolute_x(cpu: &mut CPU) -> AddressData {
+    let base_addr = cpu.bus.readw(cpu.regs.PC);
+    cpu.regs.PC += 2;
+
+    let address = base_addr + cpu.regs.X as u16;
+
+    AddressData {
+      address: Some(address & 0xFFFF),
+      data: None,
+      cross_page: is_cross_page(base_addr, address),
+    }
+}
+
+fn absolute_y(cpu: &mut CPU) -> AddressData {
+    let base_addr = cpu.bus.readw(cpu.regs.PC);
+    cpu.regs.PC += 2;
+    let address = base_addr + cpu.regs.Y as u16;
+
+    AddressData {
+      address: Some(address & 0xFFFF),
+      data: None,
+      cross_page: is_cross_page(base_addr, address),
+    }
+}
+
+fn indirect(cpu: &mut CPU) -> AddressData {
+  let mut address = cpu.bus.readw(cpu.regs.PC);
+  cpu.regs.PC += 2;
+
+  if (address & 0xFF) == 0xFF { // Hardware bug
+    address = (cpu.bus.readb(address & 0xFF00) << 8) as u16 | cpu.bus.readb(address) as u16;
+  } else {
+    address = cpu.bus.readw(address);
+  }
+
+  AddressData {
+    address: Some(address & 0xFFFF),
+    data: None,
+    cross_page: false,
+  }
+}
+
+fn x_indexed_indirect(cpu: &mut CPU) -> AddressData {
+  let address = cpu.bus.readb(cpu.regs.PC);
+  cpu.regs.PC += 1;
+
+  let address = address + cpu.regs.X;
+
+  let l = cpu.bus.readb(address as u16 & 0xFF);
+  let h = cpu.bus.readb((address + 1) as u16 & 0xFF);
+
+  AddressData {
+    address: Some(((h << 8) as u16 | l as u16) & 0xFFFF),
+    data: None,
+    cross_page: false,
+  }
+}
+
+fn indirect_y_indexed(cpu: &mut CPU) -> AddressData {
+  let address = cpu.bus.readb(cpu.regs.PC);
+  cpu.regs.PC += 1;
+
+  let l = cpu.bus.readb(address as u16 & 0xFF);
+  let h = cpu.bus.readb((address + 1) as u16 & 0xFF);
+
+  let base_addr = (h << 8) as u16 | l as u16;
+  let address = base_addr + cpu.regs.Y as u16;
+
+  AddressData {
+    address: Some(address & 0xFFFF),
+    data: None,
+    cross_page: is_cross_page(base_addr, address),
+  }
+}
+
+fn is_cross_page(addr1: u16, addr2: u16) -> bool {
+  (addr1 & 0xFF00) != (addr2 & 0xFF00)
 }
